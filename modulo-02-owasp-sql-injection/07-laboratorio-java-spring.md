@@ -56,6 +56,18 @@ Com a aplicação rodando, abra **http://localhost:8080** no navegador. A págin
 3. clicar em um **payload pronto** (ataques 1 a 5 e usos normais) que preenche os campos;
 4. ver o status HTTP, o **SQL que chegou ao banco**, o erro vazado, as linhas retornadas em tabela e a resposta bruta.
 
+### Console do banco H2
+
+Para mostrar o banco "por dentro", abra **http://localhost:8080/h2-console** e conecte com:
+
+| Campo | Valor |
+|---|---|
+| JDBC URL | `jdbc:h2:mem:laboratorio` |
+| User Name | `sa` |
+| Password | *(vazio)* |
+
+Depois execute, por exemplo, `SELECT * FROM users;` e compare com o que o ataque `UNION` extraiu pela API. O banco é em memória: só existe enquanto a aplicação está rodando e é recriado a cada start. O console é habilitado por `spring.h2.console.enabled=true` e pela dependência `spring-boot-h2console` (no Spring Boot 4 ele é um módulo separado). **Nunca habilite esse console em produção.**
+
 O arquivo [`requests.http`](laboratorio-sqli/requests.http) tem todas as requisições deste documento prontas para IntelliJ ou VS Code (extensão REST Client). Os exemplos abaixo usam `curl`.
 
 ## 7.3 Por que a versão vulnerável é vulnerável

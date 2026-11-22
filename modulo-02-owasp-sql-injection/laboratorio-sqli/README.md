@@ -12,5 +12,7 @@ mvn test              # ataques contra as duas versões
 
 Interface visual para enviar os ataques: **http://localhost:8080** (com a aplicação rodando).
 
+Console do banco H2: **http://localhost:8080/h2-console** (JDBC URL `jdbc:h2:mem:laboratorio`, user `sa`, senha vazia).
+
 Guia completo (como o ataque funciona e como se proteger): [`../07-laboratorio-java-spring.md`](../07-laboratorio-java-spring.md).
 Requisições prontas: [`requests.http`](requests.http).
