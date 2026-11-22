@@ -37,6 +37,7 @@ CONCEITO → EXEMPLO → DEMONSTRAÇÃO → ANÁLISE DO CÓDIGO → CORREÇÃO �
 | 4 | [04-analise-codigo-e-correcao.md](04-analise-codigo-e-correcao.md) | Código inseguro, PreparedStatement, defesa em camadas, reteste | 50 min |
 | 5 | [05-laboratorio-e-exercicios.md](05-laboratorio-e-exercicios.md) | Laboratório guiado e exercícios | 40 min |
 | 6 | [06-resumo-e-glossario.md](06-resumo-e-glossario.md) | Resumo, checklist, glossário, referências | 10 min |
+| 7 | [07-laboratorio-java-spring.md](07-laboratorio-java-spring.md) | Projeto Java/Spring Boot: API vulnerável x segura ([código](laboratorio-sqli)) | extra |
 
 ## Mapa do módulo
 
