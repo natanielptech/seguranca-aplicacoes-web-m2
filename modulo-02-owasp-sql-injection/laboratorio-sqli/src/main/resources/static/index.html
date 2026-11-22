@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratório de SQL Injection</title>
+<style>
+  :root {
+    --bg:#0f172a; --card:#1e293b; --line:#334155; --txt:#e2e8f0; --mut:#94a3b8;
+    --bad:#ef4444; --good:#22c55e; --warn:#f59e0b; --acc:#38bdf8;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--txt); }
+  header { padding:18px 28px; border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:20px; }
+  header p { margin:4px 0 0; color:var(--mut); font-size:13px; }
+  .aviso { background:#7f1d1d33; border:1px solid var(--bad); color:#fecaca; padding:8px 14px; margin:16px 28px 0; border-radius:8px; font-size:13px; }
+  main { padding:20px 28px 40px; display:grid; grid-template-columns:minmax(320px,430px) 1fr; gap:20px; }
+  @media (max-width:900px){ main { grid-template-columns:1fr; } }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .card h2 { margin:0 0 12px; font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--mut); }
+  label { display:block; font-size:12px; color:var(--mut); margin:10px 0 4px; }
+  input, select, textarea { width:100%; padding:9px 10px; background:#0b1220; color:var(--txt); border:1px solid var(--line); border-radius:8px; font:13px ui-monospace,Menlo,Consolas,monospace; }
+  input:focus, select:focus { outline:2px solid var(--acc); border-color:transparent; }
+  .tabs { display:flex; gap:6px; margin-bottom:6px; }
+  .tab { flex:1; padding:8px; text-align:center; border:1px solid var(--line); border-radius:8px; cursor:pointer; color:var(--mut); background:transparent; font:inherit; }
+  .tab.on { background:var(--acc); color:#0b1220; border-color:var(--acc); font-weight:600; }
+  .modo { display:flex; gap:8px; margin-top:6px; }
+  .modo label { margin:0; display:flex; align-items:center; gap:6px; flex:1; padding:8px 10px; border:1px solid var(--line); border-radius:8px; cursor:pointer; color:var(--txt); font-size:13px; }
+  .modo input { width:auto; }
+  .modo .v:has(input:checked) { border-color:var(--bad); background:#7f1d1d33; }
+  .modo .s:has(input:checked) { border-color:var(--good); background:#14532d33; }
+  .modo .b:has(input:checked) { border-color:var(--warn); background:#78350f33; }
+  button.go { margin-top:14px; width:100%; padding:11px; border:0; border-radius:8px; background:var(--acc); color:#0b1220; font-weight:700; font-size:14px; cursor:pointer; }
+  button.go:hover { filter:brightness(1.1); }
+  .presets { display:flex; flex-direction:column; gap:6px; }
+  .preset { text-align:left; padding:8px 10px; border:1px solid var(--line); border-radius:8px; background:#0b1220; color:var(--txt); cursor:pointer; font:inherit; font-size:13px; }
+  .preset:hover { border-color:var(--acc); }
+  .preset small { display:block; color:var(--mut); font-size:11px; font-family:ui-monospace,Menlo,monospace; word-break:break-all; }
+  .resultados { display:grid; gap:16px; }
+  .resultados.dois { grid-template-columns:1fr 1fr; }
+  @media (max-width:1300px){ .resultados.dois { grid-template-columns:1fr; } }
+  .res h3 { margin:0 0 8px; font-size:14px; display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+  .pill { font-size:11px; padding:2px 8px; border-radius:99px; font-weight:700; }
+  .pill.v { background:var(--bad); color:#fff; } .pill.s { background:var(--good); color:#052e16; }
+  .st { font:12px ui-monospace,Menlo,monospace; padding:2px 8px; border-radius:6px; background:#0b1220; border:1px solid var(--line); }
+  .st.ok { color:var(--good); } .st.erro { color:var(--bad); } .st.aviso { color:var(--warn); }
+  .bloco { background:#0b1220; border:1px solid var(--line); border-radius:8px; padding:10px; margin-top:8px; font:12px/1.5 ui-monospace,Menlo,Consolas,monospace; white-space:pre-wrap; word-break:break-word; overflow:auto; max-height:360px; }
+  .bloco .t { display:block; color:var(--mut); font-size:11px; margin-bottom:4px; font-family:system-ui,sans-serif; text-transform:uppercase; letter-spacing:.05em; }
+  .bloco .inj { background:#7f1d1d; color:#fecaca; border-radius:3px; padding:0 2px; }
+  table { width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); font-family:ui-monospace,Menlo,monospace; }
+  th { color:var(--mut); font-weight:600; }
+  .vazio { color:var(--mut); font-style:italic; padding:30px; text-align:center; }
+  .dica { margin-top:10px; font-size:12px; color:var(--mut); }
+</style>
+</head>
+<body>
+<header>
+  <h1>🛡️ Laboratório de SQL Injection</h1>
+  <p>Módulo 2 · Envie ataques à API vulnerável (<code>/vulneravel</code>) e compare com a segura (<code>/seguro</code>)</p>
+</header>
+<div class="aviso">⚠️ Uso exclusivamente didático e local. A API <b>/vulneravel</b> é insegura de propósito. Nunca exponha esta aplicação na rede.</div>
+
+<main>
+  <section>
+    <div class="card">
+      <h2>1. Escolha o alvo</h2>
+      <div class="modo">
+        <label class="v"><input type="radio" name="modo" value="vulneravel" checked> ❌ Vulnerável</label>
+        <label class="s"><input type="radio" name="modo" value="seguro"> ✅ Segura</label>
+        <label class="b"><input type="radio" name="modo" value="ambas"> ⚖️ Comparar</label>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>2. Monte a requisição</h2>
+      <div class="tabs">
+        <button class="tab on" data-tab="login">POST /login</button>
+        <button class="tab" data-tab="produtos">GET /produtos</button>
+      </div>
+
+      <div id="form-login">
+        <label for="username">username</label>
+        <input id="username" value="maria" autocomplete="off" spellcheck="false">
+        <label for="password">password</label>
+        <input id="password" value="abc123" autocomplete="off" spellcheck="false">
+      </div>
+
+      <div id="form-produtos" hidden>
+        <label for="busca">busca</label>
+        <input id="busca" value="Mouse" autocomplete="off" spellcheck="false">
+        <label for="ordenar">ordenar (opcional)</label>
+        <input id="ordenar" placeholder="id | nome | descricao" autocomplete="off" spellcheck="false">
+      </div>
+
+      <button class="go" id="enviar">Enviar requisição ▶</button>
+      <p class="dica">Dica: use o campo <b>sqlExecutado</b> da resposta vulnerável para ver o que o banco recebeu.</p>
+    </div>
+
+    <div class="card" style="margin-top:16px">
+      <h2>3. Payloads prontos</h2>
+      <div class="presets" id="presets"></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="card">
+      <h2>Resultado</h2>
+      <div id="saida"><div class="vazio">Nenhuma requisição enviada ainda. Escolha um payload e clique em <b>Enviar</b>.</div></div>
+    </div>
+  </section>
+</main>
+
+<script>
+const PRESETS = [
+  { tab:'login', nome:'Uso normal', desc:'maria / abc123', v:{username:'maria', password:'abc123'} },
+  { tab:'login', nome:'1. Sondagem com aspa', desc:"username = '", v:{username:"'", password:'x'} },
+  { tab:'login', nome:'2. Bypass com comentário', desc:"admin'--", v:{username:"admin'--", password:'qualquer'} },
+  { tab:'login', nome:'3. Condição sempre verdadeira', desc:"password = ' OR '1'='1", v:{username:'x', password:"' OR '1'='1"} },
+  { tab:'produtos', nome:'Busca normal', desc:'Mouse', v:{busca:'Mouse', ordenar:''} },
+  { tab:'produtos', nome:'4. UNION: vaza usuários e senhas', desc:"zzz' UNION SELECT id, name, password FROM users --", v:{busca:"zzz' UNION SELECT id, name, password FROM users --", ordenar:''} },
+  { tab:'produtos', nome:'4b. UNION: descobrir tabelas/colunas', desc:"... FROM information_schema.columns ...", v:{busca:"zzz' UNION SELECT 1, table_name, column_name FROM information_schema.columns WHERE table_schema='PUBLIC' --", ordenar:''} },
+  { tab:'produtos', nome:'5. ORDER BY blind (pergunta sim/não)', desc:"CASE WHEN (SELECT COUNT(*) FROM users WHERE name='admin')>0 THEN -id ELSE id END", v:{busca:'', ordenar:"CASE WHEN (SELECT COUNT(*) FROM users WHERE name='admin')>0 THEN -id ELSE id END"} },
+  { tab:'produtos', nome:'Ordenação válida (allowlist)', desc:'ordenar = nome', v:{busca:'', ordenar:'nome'} },
+];
+
+const $ = id => document.getElementById(id);
+let tab = 'login';
+
+function setTab(t) {
+  tab = t;
+  document.querySelectorAll('.tab').forEach(b => b.classList.toggle('on', b.dataset.tab === t));
+  $('form-login').hidden = t !== 'login';
+  $('form-produtos').hidden = t !== 'produtos';
+}
+document.querySelectorAll('.tab').forEach(b => b.addEventListener('click', () => setTab(b.dataset.tab)));
+
+PRESETS.forEach(p => {
+  const el = document.createElement('button');
+  el.className = 'preset';
+  el.type = 'button';
+  const strong = document.createElement('b'); strong.textContent = p.nome;
+  const small = document.createElement('small'); small.textContent = p.desc;
+  el.append(strong, small);
+  el.addEventListener('click', () => {
+    setTab(p.tab);
+    Object.entries(p.v).forEach(([k, v]) => $(k).value = v);
+  });
+  $('presets').appendChild(el);
+});
+
+async function chamar(versao) {
+  let resp;
+  if (tab === 'login') {
+    resp = await fetch(`/${versao}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: $('username').value, password: $('password').value }),
+    });
+  } else {
+    const q = new URLSearchParams();
+    q.set('busca', $('busca').value);
+    if ($('ordenar').value) q.set('ordenar', $('ordenar').value);
+    resp = await fetch(`/${versao}/produtos?${q}`);
+  }
+  const texto = await resp.text();
+  let json = null;
+  try { json = JSON.parse(texto); } catch (_) {}
+  return { status: resp.status, json, texto };
+}
+
+function bloco(titulo, conteudo) {
+  const d = document.createElement('div'); d.className = 'bloco';
+  const t = document.createElement('span'); t.className = 't'; t.textContent = titulo;
+  d.append(t);
+  if (conteudo instanceof Node) d.append(conteudo); else d.append(document.createTextNode(conteudo));
+  return d;
+}
+
+function tabela(linhas) {
+  const tb = document.createElement('table');
+  if (!linhas.length) { const p = document.createElement('div'); p.className = 'vazio'; p.textContent = 'Nenhuma linha retornada.'; return p; }
+  const cols = Object.keys(linhas[0]);
+  const thead = tb.createTHead().insertRow();
+  cols.forEach(c => { const th = document.createElement('th'); th.textContent = c; thead.appendChild(th); });
+  const body = tb.createTBody();
+  linhas.forEach(l => { const r = body.insertRow(); cols.forEach(c => r.insertCell().textContent = l[c]); });
+  return tb;
+}
+
+function renderizar(versao, r) {
+  const wrap = document.createElement('div'); wrap.className = 'res';
+  const h = document.createElement('h3');
+  const pill = document.createElement('span');
+  pill.className = 'pill ' + (versao === 'vulneravel' ? 'v' : 's');
+  pill.textContent = versao === 'vulneravel' ? 'VULNERÁVEL' : 'SEGURA';
+  const st = document.createElement('span');
+  st.className = 'st ' + (r.status < 300 ? 'ok' : r.status < 500 ? 'aviso' : 'erro');
+  st.textContent = 'HTTP ' + r.status;
+  h.append(pill, st);
+  wrap.appendChild(h);
+
+  const j = r.json;
+  if (j && j.sqlExecutado) wrap.appendChild(bloco('SQL que chegou ao banco', j.sqlExecutado));
+  else if (versao === 'seguro') wrap.appendChild(bloco('SQL que chegou ao banco', 'Oculto. No servidor é sempre um texto fixo com "?", e os valores seguem separados (veja o console do Spring).'));
+  if (j && j.mensagem) wrap.appendChild(bloco('Mensagem', j.mensagem));
+  if (j && j.erroDoBanco) wrap.appendChild(bloco('⚠️ Erro do banco vazado ao cliente', j.erroDoBanco));
+  if (j && j.usuario) wrap.appendChild(bloco('Usuário autenticado', `${j.usuario.name}  (role: ${j.usuario.role})`));
+  if (j && Array.isArray(j.resultado)) {
+    const d = document.createElement('div'); d.className = 'bloco'; d.style.whiteSpace = 'normal';
+    const t = document.createElement('span'); t.className = 't'; t.textContent = `Linhas retornadas (${j.resultado.length})`;
+    d.append(t, tabela(j.resultado));
+    wrap.appendChild(d);
+  }
+  wrap.appendChild(bloco('Resposta bruta', j ? JSON.stringify(j, null, 2) : r.texto));
+  return wrap;
+}
+
+$('enviar').addEventListener('click', async () => {
+  const modo = document.querySelector('input[name=modo]:checked').value;
+  const versoes = modo === 'ambas' ? ['vulneravel', 'seguro'] : [modo];
+  const saida = $('saida');
+  saida.textContent = 'Enviando...';
+  try {
+    const resultados = await Promise.all(versoes.map(v => chamar(v)));
+    const grade = document.createElement('div');
+    grade.className = 'resultados' + (versoes.length > 1 ? ' dois' : '');
+    resultados.forEach((r, i) => grade.appendChild(renderizar(versoes[i], r)));
+    saida.replaceChildren(grade);
+  } catch (e) {
+    saida.textContent = 'Falha ao chamar a API: ' + e.message;
+  }
+});
+</script>
+</body>
+</html>

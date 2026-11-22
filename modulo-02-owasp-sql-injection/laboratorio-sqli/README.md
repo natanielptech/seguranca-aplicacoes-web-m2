@@ -10,5 +10,7 @@ mvn spring-boot:run   # http://localhost:8080
 mvn test              # ataques contra as duas versões
 ```
 
+Interface visual para enviar os ataques: **http://localhost:8080** (com a aplicação rodando).
+
 Guia completo (como o ataque funciona e como se proteger): [`../07-laboratorio-java-spring.md`](../07-laboratorio-java-spring.md).
 Requisições prontas: [`requests.http`](requests.http).

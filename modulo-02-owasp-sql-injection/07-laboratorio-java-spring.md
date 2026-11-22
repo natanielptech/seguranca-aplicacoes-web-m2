@@ -47,6 +47,15 @@ mvn spring-boot:run      # sobe em http://localhost:8080
 mvn test                 # roda a bateria de ataques contra as duas versões
 ```
 
+### Interface visual
+
+Com a aplicação rodando, abra **http://localhost:8080** no navegador. A página (`src/main/resources/static/index.html`) permite:
+
+1. escolher o alvo: ❌ vulnerável, ✅ segura ou ⚖️ **comparar** (envia a mesma requisição às duas e mostra lado a lado);
+2. montar a requisição de login (`POST`) ou de produtos (`GET`) editando os campos;
+3. clicar em um **payload pronto** (ataques 1 a 5 e usos normais) que preenche os campos;
+4. ver o status HTTP, o **SQL que chegou ao banco**, o erro vazado, as linhas retornadas em tabela e a resposta bruta.
+
 O arquivo [`requests.http`](laboratorio-sqli/requests.http) tem todas as requisições deste documento prontas para IntelliJ ou VS Code (extensão REST Client). Os exemplos abaixo usam `curl`.
 
 ## 7.3 Por que a versão vulnerável é vulnerável
