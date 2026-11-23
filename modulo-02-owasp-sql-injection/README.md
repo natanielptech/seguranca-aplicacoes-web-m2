@@ -27,7 +27,7 @@ Cada tópico segue o ciclo do curso:
 CONCEITO → EXEMPLO → DEMONSTRAÇÃO → ANÁLISE DO CÓDIGO → CORREÇÃO → RETESTE → LABORATÓRIO
 ```
 
-## Roteiro (4 horas)
+
 
 | # | Arquivo | Conteúdo | Tempo |
 |---|---|---|---:|
